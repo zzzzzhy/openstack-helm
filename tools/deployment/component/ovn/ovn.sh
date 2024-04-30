@@ -17,22 +17,19 @@ export FEATURE_GATES="ovn"
 
 #NOTE: Get the over-rides to use
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
-: ${OSH_EXTRA_HELM_ARGS_OVN:="$(./tools/deployment/common/get-values-overrides.sh ovn)"}
-
-#NOTE: Lint and package chart
-make -C ${HELM_CHART_ROOT_PATH} ovn
+: ${OSH_EXTRA_HELM_ARGS_OVN:="$(helm osh get-values-overrides ${DOWLOAD_OVERRIDES:-} -p ${HELM_CHART_ROOT_PATH} -c ovn ${FEATURES})"}
 
 tee /tmp/ovn.yaml << EOF
 volume:
   ovn_ovsdb_nb:
-    enabled: false
+    enabled: true
   ovn_ovsdb_sb:
-    enabled: false
+    enabled: true
 network:
   interface:
     tunnel: null
 conf:
-  ovn_bridge_mappings: public:br-ex
+  ovn_bridge_mappings: publicnet:br-ex
   auto_bridge_add:
     br-ex: provider1
 EOF
@@ -42,8 +39,11 @@ EOF
 helm upgrade --install ovn ${HELM_CHART_ROOT_PATH}/ovn \
   --namespace=openstack \
   --values=/tmp/ovn.yaml \
+  --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc-local \
+  --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc-local \
+  --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_OVN}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack
