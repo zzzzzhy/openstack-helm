@@ -14,13 +14,16 @@
 
 set -xe
 
-#NOTE: Define variables
-: ${OSH_INFRA_HELM_REPO:="../openstack-helm-infra"}
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides ${DOWLOAD_OVERRIDES:-} -p ${OSH_INFRA_PATH} -c mariadb ${FEATURES})"}
+#NOTE: Get the over-rides to use
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(./tools/deployment/common/get-values-overrides.sh mariadb)"}
+
+#NOTE: Lint and package chart
+make -C ${HELM_CHART_ROOT_PATH} mariadb
 
 #NOTE: Deploy command
-helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
+: ${OSH_EXTRA_HELM_ARGS:=""}
+helm upgrade --install mariadb ${HELM_CHART_ROOT_PATH}/mariadb \
     --namespace=openstack \
     --set volume.use_local_path_for_single_pod_cluster.enabled=false \
     --set volume.enabled=true \
@@ -31,4 +34,4 @@ helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
     ${OSH_EXTRA_HELM_ARGS_MARIADB}
 
 #NOTE: Wait for deploy
-helm osh wait-for-pods openstack
+./tools/deployment/common/wait-for-pods.sh openstack

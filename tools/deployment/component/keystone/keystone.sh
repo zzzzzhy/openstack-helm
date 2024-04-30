@@ -15,19 +15,20 @@
 set -xe
 
 #NOTE: Define variables
-: ${OSH_HELM_REPO:="../openstack-helm"}
-: ${OSH_PATH:="../openstack-helm"}
-: ${OSH_EXTRA_HELM_ARGS_KEYSTONE:="$(helm osh get-values-overrides ${DOWLOAD_OVERRIDES:-} -p ${OSH_PATH} -c keystone ${FEATURES})"}
-: ${RUN_HELM_TESTS:="no"}
+: ${OSH_EXTRA_HELM_ARGS_KEYSTONE:="$(./tools/deployment/common/get-values-overrides.sh keystone)"}
+: ${RUN_HELM_TESTS:="yes"}
+
+#NOTE: Lint and package chart
+make keystone
 
 #NOTE: Deploy command
-helm upgrade --install keystone ${OSH_HELM_REPO}/keystone \
+helm upgrade --install keystone ./keystone \
     --namespace=openstack \
     ${OSH_EXTRA_HELM_ARGS:=} \
-    ${OSH_EXTRA_HELM_ARGS_KEYSTONE}
+    ${OSH_EXTRA_HELM_ARGS_KEYSTONE:=}
 
 #NOTE: Wait for deploy
-helm osh wait-for-pods openstack
+./tools/deployment/common/wait-for-pods.sh openstack
 
 export OS_CLOUD=openstack_helm
 sleep 30 #NOTE(portdirect): Wait for ingress controller to update rules and restart Nginx

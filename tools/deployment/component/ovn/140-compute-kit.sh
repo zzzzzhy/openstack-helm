@@ -41,15 +41,19 @@ export FEATURE_GATES="ovn"
 #     ${OSH_EXTRA_HELM_ARGS_PLACEMENT}
 
 #NOTE: Get the over-rides to use
-# : ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(helm osh get-values-overrides ${DOWLOAD_OVERRIDES:-} ${DOWLOAD_OVERRIDES:-} ${DOWLOAD_OVERRIDES:-} -c neutron ${FEATURE_GATES})"}
-: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(./tools/deployment/common/get-values-overrides.sh neutron ovn)"}
+: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(./tools/deployment/common/get-values-overrides.sh neutron)"}
+
+#NOTE: Lint and package chart
+make neutron
+
 helm upgrade --install neutron ./neutron \
     --namespace=openstack \
     ${OSH_RELEASE_OVERRIDES_NEUTRON} \
     ${OSH_EXTRA_HELM_ARGS} \
     ${OSH_EXTRA_HELM_ARGS_NEUTRON}
+
 #NOTE: Wait for deploy
-helm osh wait-for-pods openstack
+./tools/deployment/common/wait-for-pods.sh openstack
 
 # ./tools/deployment/common/run-helm-tests.sh nova
 ./tools/deployment/common/run-helm-tests.sh neutron
