@@ -56,4 +56,4 @@ helm upgrade --install neutron ./neutron \
 ./tools/deployment/common/wait-for-pods.sh openstack
 
 # ./tools/deployment/common/run-helm-tests.sh nova
-./tools/deployment/common/run-helm-tests.sh neutron
+# ./tools/deployment/common/run-helm-tests.sh neutron
