@@ -13,7 +13,7 @@ conf:
   plugins:
     ml2_conf:
       ml2:
-        extension_drivers: port_security
+        extension_drivers: port_security,l2population,qos
         type_drivers: flat,vxlan,geneve
         tenant_network_types: geneve
       ovn:
@@ -27,4 +27,4 @@ manifests:
   daemonset_metadata_agent: false
   daemonset_ovs_agent: false
 
-  daemonset_ovn_metadata_agent: true
+  daemonset_ovn_metadata_agent: false
