@@ -25,5 +25,4 @@ helm plugin install https://opendev.org/openstack/openstack-helm-plugin.git
 ./tools/deployment/component/keystone/keystone.sh
 ./tools/deployment/component/ovn/120-openvswitch.sh
 ./tools/deployment/component/ovn/ovn.sh
-export FEATURES=ovn
 ./tools/deployment/component/ovn/140-compute-kit.sh
