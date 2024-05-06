@@ -2204,7 +2204,7 @@ endpoints:
       enabled: false
       neutron:
         username: neutron
-        password: Dxqu6%WkK5HvDt%!
+        password: password
     hosts:
       default: localhost
     host_fqdn_override:
@@ -2222,7 +2222,7 @@ endpoints:
             internal: mariadb-tls-direct
       neutron:
         username: neutron
-        password: Dxqu6%WkK5HvDt%!
+        password: password
     hosts:
       default: mariadb
     host_fqdn_override:
@@ -2242,7 +2242,7 @@ endpoints:
             internal: rabbitmq-tls-direct
       neutron:
         username: neutron
-        password: Dxqu6%WkK5HvDt%!
+        password: password
     statefulset:
       replicas: 2
       name: rabbitmq-rabbitmq
