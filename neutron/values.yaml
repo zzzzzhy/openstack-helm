@@ -2204,7 +2204,7 @@ endpoints:
       enabled: false
       neutron:
         username: neutron
-        password: password
+        password: Dxqu6%WkK5HvDt%!
     hosts:
       default: localhost
     host_fqdn_override:
