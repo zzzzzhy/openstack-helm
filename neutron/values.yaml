@@ -2308,6 +2308,7 @@ endpoints:
     name: keystone
     auth:
       admin:
+        interface: internal      
         region_name: RegionOne
         username: admin
         password: password
@@ -2316,6 +2317,7 @@ endpoints:
         project_domain_name: default
       neutron:
         role: admin
+        interface: internal
         region_name: RegionOne
         username: neutron
         password: password
@@ -2323,6 +2325,7 @@ endpoints:
         user_domain_name: default
         project_domain_name: default
       nova:
+        interface: internal
         region_name: RegionOne
         project_name: service
         username: nova
@@ -2330,6 +2333,7 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       placement:
+        interface: internal
         region_name: RegionOne
         project_name: service
         username: placement
@@ -2337,6 +2341,7 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       designate:
+        interface: internal
         region_name: RegionOne
         project_name: service
         username: designate
@@ -2344,6 +2349,7 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       ironic:
+        interface: internal
         region_name: RegionOne
         project_name: service
         username: ironic
