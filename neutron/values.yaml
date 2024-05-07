@@ -2510,12 +2510,12 @@ manifests:
   certificates: false
   configmap_bin: true
   configmap_etc: true
-  daemonset_dhcp_agent: true
-  daemonset_l3_agent: true
-  daemonset_lb_agent: true
-  daemonset_metadata_agent: true
+  daemonset_dhcp_agent: false
+  daemonset_l3_agent: false
+  daemonset_lb_agent: false
+  daemonset_metadata_agent: false
   daemonset_ovs_agent: true
-  daemonset_sriov_agent: true
+  daemonset_sriov_agent: false
   daemonset_l2gw_agent: false
   daemonset_bagpipe_bgp: false
   daemonset_bgp_dragent: false
