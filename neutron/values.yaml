@@ -2319,7 +2319,7 @@ endpoints:
         role: admin
         region_name: RegionOne
         username: neutron
-        password: password
+        password: "Dxqu6%WkK5HvDt%!"
         project_name: service
         user_domain_name: default
         project_domain_name: default
