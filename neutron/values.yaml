@@ -1799,8 +1799,9 @@ conf:
       # NOTE(portdirect): the bind port should not be defined, and is manipulated
       # via the endpoints section.
       bind_port: null
-      api_workers: 8
-      rpc_workers: 16
+      default_availability_zones: nova
+      api_workers: 1
+      rpc_workers: 4
       allow_overlapping_ips: True
       state_path: /var/lib/neutron
       # core_plugin can be: ml2, calico
@@ -1833,7 +1834,7 @@ conf:
     oslo_policy:
       policy_file: /etc/neutron/policy.yaml
     ovn:
-      ovn_metadata_enabled: false
+      ovn_metadata_enabled: true
     nova:
       auth_type: password
       auth_version: v3
@@ -2308,7 +2309,6 @@ endpoints:
     name: keystone
     auth:
       admin:
-        interface: internal      
         region_name: RegionOne
         username: admin
         password: password
@@ -2317,7 +2317,6 @@ endpoints:
         project_domain_name: default
       neutron:
         role: admin
-        interface: internal
         region_name: RegionOne
         username: neutron
         password: password
@@ -2325,7 +2324,6 @@ endpoints:
         user_domain_name: default
         project_domain_name: default
       nova:
-        interface: internal
         region_name: RegionOne
         project_name: service
         username: nova
@@ -2333,7 +2331,6 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       placement:
-        interface: internal
         region_name: RegionOne
         project_name: service
         username: placement
@@ -2341,7 +2338,6 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       designate:
-        interface: internal
         region_name: RegionOne
         project_name: service
         username: designate
@@ -2349,14 +2345,26 @@ endpoints:
         user_domain_name: service
         project_domain_name: service
       ironic:
-        interface: internal
         region_name: RegionOne
         project_name: service
         username: ironic
         password: password
         user_domain_name: service
         project_domain_name: service
-
+      test:
+        role: admin
+        region_name: RegionOne
+        username: neutron-test
+        password: password
+        # NOTE: this project will be purged and reset if
+        # conf.rally_tests.force_project_purge is set to true
+        # which may be required upon test failure, but be aware that this will
+        # expunge all openstack objects, so if this is used a seperate project
+        # should be used for each helm test, and also it should be ensured
+        # that this project is not in use by other tenants
+        project_name: test
+        user_domain_name: service
+        project_domain_name: service
     hosts:
       default: keystone
       internal: keystone-api

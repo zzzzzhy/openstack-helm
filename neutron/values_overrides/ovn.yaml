@@ -13,7 +13,7 @@ conf:
   plugins:
     ml2_conf:
       ml2:
-        extension_drivers: port_security,l2population,qos
+        extension_drivers: port_security
         type_drivers: flat,vxlan,geneve
         tenant_network_types: geneve
       ovn:
