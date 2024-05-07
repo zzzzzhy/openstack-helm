@@ -17,10 +17,8 @@ export FEATURE_GATES="ovn"
 
 #NOTE: Get the over-rides to use
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
-: ${OSH_EXTRA_HELM_ARGS_OVN:="$(./tools/deployment/common/get-values-overrides.sh ovn)"}
+: ${OSH_EXTRA_HELM_ARGS_OVN:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${HELM_CHART_ROOT_PATH} -c ovn ${FEATURES})"}
 
-#NOTE: Lint and package chart
-make -C ${HELM_CHART_ROOT_PATH} ovn
 tee /tmp/ovn.yaml << EOF
 volume:
   ovn_ovsdb_nb:
@@ -48,4 +46,4 @@ helm upgrade --install ovn ${HELM_CHART_ROOT_PATH}/ovn \
   ${OSH_EXTRA_HELM_ARGS_OVN}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack

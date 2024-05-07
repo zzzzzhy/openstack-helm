@@ -13,21 +13,23 @@
 #    under the License.
 set -xe
 
-#NOTE: Lint and package chart
-make ceilometer
+#NOTE: Define variables
+: ${OSH_HELM_REPO:="../openstack-helm"}
+: ${OSH_PATH:="../openstack-helm"}
+: ${OSH_EXTRA_HELM_ARGS_CEILOMETER:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${OSH_PATH} -c ceilometer ${FEATURES})"}
 
 #NOTE: Wait for deploy
-helm upgrade --install ceilometer ./ceilometer \
+helm upgrade --install ceilometer ${OSH_HELM_REPO}/ceilometer \
   --namespace=openstack \
   --set pod.replicas.api=2 \
   --set pod.replicas.central=2 \
   --set pod.replicas.collector=2 \
   --set pod.replicas.notification=2 \
-  ${OSH_EXTRA_HELM_ARGS} \
+  ${OSH_EXTRA_HELM_ARGS:=} \
   ${OSH_EXTRA_HELM_ARGS_CEILOMETER}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack
 
 #NOTE: Validate Deployment info
 export OS_CLOUD=openstack_helm

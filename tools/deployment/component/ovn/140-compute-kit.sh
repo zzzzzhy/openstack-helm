@@ -18,7 +18,7 @@ export FEATURE_GATES="ovn"
 : ${RUN_HELM_TESTS:="yes"}
 
 #NOTE: Get the over-rides to use
-# : ${OSH_EXTRA_HELM_ARGS_NOVA:="$(helm osh get-values-overrides ${DOWLOAD_OVERRIDES:-} ${DOWLOAD_OVERRIDES:-} ${DOWLOAD_OVERRIDES:-} -c nova ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_NOVA:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -c nova ${FEATURES})"}
 
 # tee /tmp/pvc-ceph-client-key.yaml << EOF
 # AQAk//BhgQMXDxAAPwH86gbDjEEpmXC4s2ontw==
@@ -41,10 +41,7 @@ export FEATURE_GATES="ovn"
 #     ${OSH_EXTRA_HELM_ARGS_PLACEMENT}
 
 #NOTE: Get the over-rides to use
-: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(./tools/deployment/common/get-values-overrides.sh neutron)"}
-
-#NOTE: Lint and package chart
-make neutron
+: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -c neutron ${FEATURES})"}
 
 helm upgrade --install neutron ./neutron \
     --namespace=openstack \
@@ -53,7 +50,7 @@ helm upgrade --install neutron ./neutron \
     ${OSH_EXTRA_HELM_ARGS_NEUTRON}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack
 
 # ./tools/deployment/common/run-helm-tests.sh nova
 # ./tools/deployment/common/run-helm-tests.sh neutron

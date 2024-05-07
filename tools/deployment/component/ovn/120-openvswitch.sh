@@ -17,10 +17,8 @@ export FEATURE_GATES="ovn"
 
 #NOTE: Get the over-rides to use
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
-: ${OSH_EXTRA_HELM_ARGS_OPENVSWITCH:="$(./tools/deployment/common/get-values-overrides.sh openvswitch)"}
+: ${OSH_EXTRA_HELM_ARGS_OPENVSWITCH:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${HELM_CHART_ROOT_PATH} -c openvswitch ${FEATURES})"}
 
-#NOTE: Lint and package chart
-make -C ${HELM_CHART_ROOT_PATH} openvswitch
 #NOTE: Deploy command
 : ${OSH_EXTRA_HELM_ARGS:=""}
 helm upgrade --install openvswitch ${HELM_CHART_ROOT_PATH}/openvswitch \
@@ -30,4 +28,4 @@ helm upgrade --install openvswitch ${HELM_CHART_ROOT_PATH}/openvswitch \
   ${OSH_EXTRA_HELM_ARGS_OPENVSWITCH}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack

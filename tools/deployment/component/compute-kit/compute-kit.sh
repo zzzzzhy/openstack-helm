@@ -13,6 +13,12 @@
 #    under the License.
 set -xe
 
+#NOTE: Define variables
+: ${OSH_HELM_REPO:="../openstack-helm"}
+: ${OSH_PATH:="../openstack-helm"}
+: ${OSH_EXTRA_HELM_ARGS_PLACEMENT:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${OSH_PATH} -c placement ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_NOVA:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${OSH_PATH} -c nova ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -p ${OSH_PATH} -c neutron ${FEATURES})"}
 : ${RUN_HELM_TESTS:="yes"}
 
 export OS_CLOUD=openstack_helm
@@ -22,27 +28,16 @@ if openstack service list -f value -c Type | grep -q "^volume" && \
   CEPH_ENABLED=true
 fi
 
-# Get overrides
-: ${OSH_EXTRA_HELM_ARGS_PLACEMENT:="$(./tools/deployment/common/get-values-overrides.sh placement)"}
-
-# Lint and package
-make placement
-
-# Deploy placement
-helm upgrade --install placement ./placement --namespace=openstack \
-    ${OSH_EXTRA_HELM_ARGS:=} ${OSH_EXTRA_HELM_ARGS_PLACEMENT}
-
-#NOTE: Get the over-rides to use
-: ${OSH_EXTRA_HELM_ARGS_NOVA:="$(./tools/deployment/common/get-values-overrides.sh nova)"}
-
-#NOTE: Lint and package chart
-make nova
+#NOTE: Deploy placement
+helm upgrade --install placement ${OSH_HELM_REPO}/placement --namespace=openstack \
+    ${OSH_EXTRA_HELM_ARGS:=} \
+    ${OSH_EXTRA_HELM_ARGS_PLACEMENT}
 
 #NOTE: Deploy nova
 : ${OSH_EXTRA_HELM_ARGS:=""}
 if [ "x$(systemd-detect-virt)" == "xnone" ] || [ "x$(systemd-detect-virt)" == "xkvm" ]; then
   echo 'OSH is not being deployed in virtualized environment'
-  helm upgrade --install nova ./nova \
+  helm upgrade --install nova ${OSH_HELM_REPO}/nova \
       --namespace=openstack \
       --set bootstrap.wait_for_computes.enabled=true \
       --set conf.ceph.enabled=${CEPH_ENABLED} \
@@ -50,7 +45,7 @@ if [ "x$(systemd-detect-virt)" == "xnone" ] || [ "x$(systemd-detect-virt)" == "x
       ${OSH_EXTRA_HELM_ARGS_NOVA}
 else
   echo 'OSH is being deployed in virtualized environment, using qemu for nova'
-  helm upgrade --install nova ./nova \
+  helm upgrade --install nova ${OSH_HELM_REPO}/nova \
       --namespace=openstack \
       --set bootstrap.wait_for_computes.enabled=true \
       --set conf.ceph.enabled=${CEPH_ENABLED} \
@@ -59,12 +54,6 @@ else
       ${OSH_EXTRA_HELM_ARGS:=} \
       ${OSH_EXTRA_HELM_ARGS_NOVA}
 fi
-
-#NOTE: Get the over-rides to use
-: ${OSH_EXTRA_HELM_ARGS_NEUTRON:="$(./tools/deployment/common/get-values-overrides.sh neutron)"}
-
-#NOTE: Lint and package chart
-make neutron
 
 #NOTE: Deploy neutron
 tee /tmp/neutron.yaml << EOF
@@ -101,20 +90,18 @@ labels:
       node_selector_value: enabled
 EOF
 
-helm upgrade --install neutron ./neutron \
+helm upgrade --install neutron ${OSH_HELM_REPO}/neutron \
     --namespace=openstack \
     --values=/tmp/neutron.yaml \
     ${OSH_EXTRA_HELM_ARGS:=} \
-    ${OSH_VALUES_OVERRIDES_HELM_ARGS:=} \
     ${OSH_EXTRA_HELM_ARGS_NEUTRON}
-
 
 # If compute kit installed using Tungsten Fubric, it will be alive when Tunsten Fabric become active.
 if [[ "$FEATURE_GATES" =~ (,|^)tf(,|$) ]]; then
   exit 0
 fi
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack
 
 #NOTE: Validate Deployment info
 export OS_CLOUD=openstack_helm
