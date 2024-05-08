@@ -31,7 +31,7 @@ network:
 conf:
   ovn_bridge_mappings: publicnet:br-ex
   auto_bridge_add:
-    br-ex: provider1
+    br-ex: provider1,bond0.2125
 EOF
 
 #NOTE: Deploy command
@@ -42,6 +42,9 @@ helm upgrade --install ovn ${HELM_CHART_ROOT_PATH}/ovn \
   --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc-local \
   --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc-local \
   --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
+  --set pod.replicas.ovn_ovsdb_nb=2 \
+  --set pod.replicas.ovn_ovsdb_sb=2 \
+  --set pod.replicas.ovn_northd=2 \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_OVN}
 
