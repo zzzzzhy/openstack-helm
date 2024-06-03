@@ -12,7 +12,8 @@ cd ~/osh/openstack-helm
 kubectl label --overwrite nodes --all openstack-control-plane=enabled
 kubectl label --overwrite nodes --all openstack-compute-node=enabled
 kubectl label --overwrite nodes --all openvswitch=enabled
-kubectl label --overwrite nodes -l "node-role.kubernetes.io/control-plane" l3-agent=enabled #会在有node-role.kubernetes.io/control-plane标签的node创建ovs
+#会在有node-role.kubernetes.io/control-plane标签的node创建ovs
+kubectl label --overwrite nodes -l "node-role.kubernetes.io/control-plane" l3-agent=enabled 
 kubectl label --overwrite nodes -l "node-role.kubernetes.io/control-plane" openstack-network-node=enabled
 
 apt install jq

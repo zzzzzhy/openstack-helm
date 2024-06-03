@@ -1799,7 +1799,6 @@ conf:
       # NOTE(portdirect): the bind port should not be defined, and is manipulated
       # via the endpoints section.
       bind_port: null
-      default_availability_zones: nova
       api_workers: 1
       rpc_workers: 4
       allow_overlapping_ips: True
@@ -1810,9 +1809,6 @@ conf:
       # networking_ovn.l3.l3_ovn.OVNL3RouterPlugin for OVN
       service_plugins: router
       allow_automatic_l3agent_failover: True
-      l3_ha: True
-      max_l3_agents_per_router: 2
-      l3_ha_network_type: vxlan
       network_auto_schedule: True
       router_auto_schedule: True
       # (NOTE)portdirect: if unset this is populated dynamically from the value in
@@ -1834,7 +1830,7 @@ conf:
     oslo_policy:
       policy_file: /etc/neutron/policy.yaml
     ovn:
-      ovn_metadata_enabled: true
+      ovn_metadata_enabled: false
     nova:
       auth_type: password
       auth_version: v3
@@ -2319,7 +2315,7 @@ endpoints:
         role: admin
         region_name: RegionOne
         username: neutron
-        password: "Dxqu6%WkK5HvDt%!"
+        password: password
         project_name: service
         user_domain_name: default
         project_domain_name: default

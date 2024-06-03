@@ -32,7 +32,7 @@ conf:
   ovn_bridge_mappings: publicnet:br-ex
   auto_bridge_add:
     br-ex: provider1
-    br-ex: bond0.2125
+    br-ex: bond2.2125
 EOF
 
 #NOTE: Deploy command
@@ -40,8 +40,8 @@ EOF
 helm upgrade --install ovn ${HELM_CHART_ROOT_PATH}/ovn \
   --namespace=openstack \
   --values=/tmp/ovn.yaml \
-  --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc-local \
-  --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc-local \
+  --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc \
+  --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc \
   --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
 
   ${OSH_EXTRA_HELM_ARGS} \
