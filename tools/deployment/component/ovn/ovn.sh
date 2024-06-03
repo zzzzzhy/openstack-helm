@@ -43,7 +43,6 @@ helm upgrade --install ovn ${HELM_CHART_ROOT_PATH}/ovn \
   --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc \
   --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc \
   --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
-
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_OVN}
 
