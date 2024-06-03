@@ -1809,6 +1809,8 @@ conf:
       # networking_ovn.l3.l3_ovn.OVNL3RouterPlugin for OVN
       service_plugins: router
       allow_automatic_l3agent_failover: True
+      l3_ha: True
+      l3_ha_network_type: vxlan
       network_auto_schedule: True
       router_auto_schedule: True
       # (NOTE)portdirect: if unset this is populated dynamically from the value in
@@ -1830,7 +1832,8 @@ conf:
     oslo_policy:
       policy_file: /etc/neutron/policy.yaml
     ovn:
-      ovn_metadata_enabled: false
+      ovn_metadata_enabled: true
+      enable_distributed_floating_ip: true
     nova:
       auth_type: password
       auth_version: v3
@@ -1924,12 +1927,12 @@ conf:
   plugins:
     ml2_conf:
       ml2:
-        extension_drivers: port_security
+        extension_drivers: port_security,l2population,qos
         # (NOTE)portdirect: if unset this is populated dyanmicly from the value
         # in 'network.backend' to sane defaults.
-        mechanism_drivers: null
-        type_drivers: flat,vlan,vxlan,local
-        tenant_network_types: vxlan
+        mechanism_drivers: ovn
+        type_drivers: flat,vlan,gre,vxlan,geneve
+        tenant_network_types: geneve
       ml2_type_vxlan:
         vni_ranges: 1:1000
         vxlan_group: 239.1.1.1
@@ -1945,6 +1948,7 @@ conf:
         max_header_size: 38
       agent:
         extensions: ""
+        l2_population: True
     ml2_conf_sriov: null
     taas:
       taas:

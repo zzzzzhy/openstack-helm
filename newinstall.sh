@@ -60,3 +60,26 @@ helm upgrade --install keystone openstack-helm/keystone \
     --namespace=openstack \
     $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c keystone ${FEATURES})
 
+PROVIDER_INTERFACE=null
+tee ${OVERRIDES_DIR}/neutron/values_overrides/neutron_simple.yaml << EOF
+conf:
+  neutron:
+    DEFAULT:
+    l3_ha: False
+    max_l3_agents_per_router: 1
+  # <provider_interface_name> will be attached to the br-ex bridge.
+  # The IP assigned to the interface will be moved to the bridge.
+  auto_bridge_add:
+    br-ex: null
+  plugins:
+    ml2_conf:
+      ml2_type_flat:
+        flat_networks: publicnet
+    openvswitch_agent:
+      ovs:
+        bridge_mappings: publicnet:br-ex
+EOF
+
+helm upgrade --install neutron openstack-helm/neutron \
+    --namespace=openstack \
+    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c neutron neutron_simple ovn)
