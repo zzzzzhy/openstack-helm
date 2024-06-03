@@ -1807,7 +1807,7 @@ conf:
       core_plugin: ml2
       # service_plugin can be: router, odl-router, empty for calico,
       # networking_ovn.l3.l3_ovn.OVNL3RouterPlugin for OVN
-      service_plugins: router
+      service_plugins: router,trunk,segments,port_forwarding,qos
       allow_automatic_l3agent_failover: True
       l3_ha: True
       l3_ha_network_type: vxlan
