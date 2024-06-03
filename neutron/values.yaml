@@ -577,14 +577,14 @@ pod:
           privileged: true
     neutron_server:
       pod:
-        runAsUser: 42424
+        runAsUser: 0
       container:
         nginx:
           runAsUser: 0
           readOnlyRootFilesystem: false
         neutron_server:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
     neutron_sriov_agent:
       pod:
         runAsUser: 42424
