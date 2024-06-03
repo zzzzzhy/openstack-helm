@@ -2522,7 +2522,7 @@ manifests:
   job_bootstrap: true
   job_db_init: true
   job_db_sync: true
-  job_db_drop: false
+  job_db_drop: true
   job_image_repo_sync: true
   job_ks_endpoints: true
   job_ks_service: true
