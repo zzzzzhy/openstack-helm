@@ -1,5 +1,5 @@
-helm repo add openstack-helm https://tarballs.opendev.org/openstack/openstack-helm
-helm repo add openstack-helm-infra https://tarballs.opendev.org/openstack/openstack-helm-infra
+: ${OSH_HELM_REPO:="../openstack-helm"}
+: ${OSH_PATH:="../openstack-helm"}
 helm plugin install https://opendev.org/openstack/openstack-helm-plugin
 tee > /tmp/openstack_namespace.yaml <<EOF
 apiVersion: v1
@@ -21,14 +21,11 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --set controller.ingressClassResource.default="false" \
     --set controller.ingressClass=nginx \
     --set controller.labels.app=ingress-api
-export OPENSTACK_RELEASE=2024.1
+export OPENSTACK_RELEASE=2023.2
 # Features enabled for the deployment. This is used to look up values overrides.
 export FEATURES="${OPENSTACK_RELEASE} ubuntu_jammy"
-# Directory where values overrides are looked up or downloaded to.
-export OVERRIDES_DIR=$(pwd)/overrides
 
-INFRA_OVERRIDES_URL=https://opendev.org/openstack/openstack-helm-infra/raw/branch/master
-OVERRIDES_URL=https://opendev.org/openstack/openstack-helm/raw/branch/master
+
 kubectl label --overwrite nodes --all openstack-control-plane=enabled
 kubectl label --overwrite nodes --all openstack-compute-node=enabled
 kubectl label --overwrite nodes --all openvswitch=enabled
@@ -37,49 +34,71 @@ kubectl label --overwrite nodes --all l3-agent=enabled
 kubectl label --overwrite nodes --all openstack-network-node=enabled
 
 apt install jq -y
-helm upgrade --install rabbitmq openstack-helm-infra/rabbitmq --namespace=openstack \
+helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=openstack \
     --set pod.replicas.server=1 \
     --set volume.enabled=false    \
     --timeout=600s     \
-    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c rabbitmq ${FEATURES})
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c rabbitmq ${FEATURES})
+helm osh wait-for-pods openstack
 
-helm upgrade --install mariadb openstack-helm-infra/mariadb \
+helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
     --namespace=openstack \
     --set volume.use_local_path_for_single_pod_cluster.enabled=false \
     --set volume.enabled=true \
     --set volume.class_name=csi-cephfs-sc \
     --set volume.backup.class_name=csi-cephfs-sc \
     --set pod.replicas.server=1 \
-    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c mariadb ${FEATURES})
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c mariadb ${FEATURES})
+helm osh wait-for-pods openstack
 
-helm upgrade --install memcached openstack-helm-infra/memcached \
+helm upgrade --install memcached ${OSH_INFRA_HELM_REPO}/memcached \
     --namespace=openstack \
-    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c memcached ${FEATURES})
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c memcached ${FEATURES})
+helm osh wait-for-pods openstack
 
-helm upgrade --install keystone openstack-helm/keystone \
+helm upgrade --install keystone ${OSH_INFRA_HELM_REPO}/keystone \
     --namespace=openstack \
-    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c keystone ${FEATURES})
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c keystone ${FEATURES})
+helm osh wait-for-pods openstack
 
-PROVIDER_INTERFACE=null
-tee ${OVERRIDES_DIR}/neutron/values_overrides/neutron_simple.yaml << EOF
+helm upgrade --install openvswitch ${OSH_INFRA_HELM_REPO}/openvswitch \
+  --namespace=openstack \
+  --set conf.ovs_hw_offload.enabled=true \
+  $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c openvswitch ${FEATURES}) 
+helm osh wait-for-pods openstack
+
+
+tee /tmp/ovn.yaml << EOF
+volume:
+  ovn_ovsdb_nb:
+    enabled: true
+  ovn_ovsdb_sb:
+    enabled: true
+network:
+  interface:
+    tunnel: null
 conf:
-  neutron:
-    DEFAULT:
-    l3_ha: False
-    max_l3_agents_per_router: 1
-  # <provider_interface_name> will be attached to the br-ex bridge.
-  # The IP assigned to the interface will be moved to the bridge.
+  ovn_bridge_mappings: publicnet:br-ex
   auto_bridge_add:
-    br-ex: null
-  plugins:
-    ml2_conf:
-      ml2_type_flat:
-        flat_networks: publicnet
-    openvswitch_agent:
-      ovs:
-        bridge_mappings: publicnet:br-ex
+    br-ex: provider1
+    br-ex: bond2.2125
 EOF
 
-helm upgrade --install neutron openstack-helm/neutron \
+#NOTE: Deploy command
+: ${OSH_EXTRA_HELM_ARGS:=""}
+helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
+  --namespace=openstack \
+  --values=/tmp/ovn.yaml \
+  --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc \
+  --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc \
+  --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
+  $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c ovn ${FEATURES}) 
+
+#NOTE: Wait for deploy
+helm osh wait-for-pods openstack
+
+
+helm upgrade --install horizon $(pwd)/horizon \
     --namespace=openstack \
-    $(helm osh get-values-overrides -p ${OVERRIDES_DIR} -c neutron neutron_simple ovn)
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c horizon ${FEATURES})
+helm osh wait-for-pods openstack   

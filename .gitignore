@@ -75,4 +75,4 @@ logs/
 tmp/
 
 # Developer symlinks
-helm-toolkit
+#helm-toolkit

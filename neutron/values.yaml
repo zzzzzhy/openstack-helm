@@ -1832,7 +1832,7 @@ conf:
     oslo_policy:
       policy_file: /etc/neutron/policy.yaml
     ovn:
-      ovn_metadata_enabled: true
+      ovn_metadata_enabled: false
       enable_distributed_floating_ip: true
     nova:
       auth_type: password
