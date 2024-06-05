@@ -79,8 +79,8 @@ network:
         nginx.ingress.kubernetes.io/rewrite-target: /
     external_policy_local: false
     node_port:
-      enabled: false
-      port: 30500
+      enabled: true
+      port: 32751
   admin:
     node_port:
       enabled: false

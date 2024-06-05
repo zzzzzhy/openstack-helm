@@ -140,8 +140,8 @@ network:
         nginx.ingress.kubernetes.io/rewrite-target: /
     external_policy_local: false
     node_port:
-      enabled: false
-      port: 30096
+      enabled: true
+      port: 32750
 
 bootstrap:
   enabled: false
