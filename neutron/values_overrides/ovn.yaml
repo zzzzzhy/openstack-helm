@@ -8,18 +8,18 @@ conf:
   neutron:
     DEFAULT:
       router_distributed: True
-      service_plugins: ovn-router
+      service_plugins: ovn-router,trunk,segments,port_forwarding,qos
       l3_ha_network_type: geneve
   plugins:
     ml2_conf:
       ml2:
-        extension_drivers: port_security
-        type_drivers: flat,vxlan,geneve
+        extension_drivers: port_security,l2population,qos
+        type_drivers: flat,vlan,vxlan,geneve
         tenant_network_types: geneve
       ovn:
         ovn_l3_scheduler: leastloaded
         dns_servers: 8.8.8.8,1.1.1.1
-        neutron_sync_mode: repair
+        neutron_sync_mode: log
 
 manifests:
   daemonset_dhcp_agent: false
