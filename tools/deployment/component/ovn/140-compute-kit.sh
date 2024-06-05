@@ -45,9 +45,8 @@ export FEATURE_GATES="ovn"
 
 helm upgrade --install neutron ./neutron \
     --namespace=openstack \
-    ${OSH_RELEASE_OVERRIDES_NEUTRON} \
-    ${OSH_EXTRA_HELM_ARGS} \
-    ${OSH_EXTRA_HELM_ARGS_NEUTRON}
+    $(helm osh get-values-overrides ${DOWNLOAD_OVERRIDES:-} -c neutron ovn)
+
 
 #NOTE: Wait for deploy
 helm osh wait-for-pods openstack

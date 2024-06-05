@@ -86,7 +86,6 @@ conf:
 EOF
 
 #NOTE: Deploy command
-: ${OSH_EXTRA_HELM_ARGS:=""}
 helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
   --namespace=openstack \
   --values=/tmp/ovn.yaml \
@@ -98,6 +97,9 @@ helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
 #NOTE: Wait for deploy
 helm osh wait-for-pods openstack
 
+helm upgrade --install neutron ./neutron \
+    --namespace=openstack \
+    $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c neutron ovn)
 
 helm upgrade --install horizon $(pwd)/horizon \
     --namespace=openstack \
