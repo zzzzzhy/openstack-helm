@@ -1,5 +1,7 @@
 : ${OSH_HELM_REPO:="../openstack-helm"}
 : ${OSH_PATH:="../openstack-helm"}
+
+OSH_INFRA_HELM_REPO=$(pwd)
 # export OPENSTACK_RELEASE=2023.2
 # export FEATURES="${OPENSTACK_RELEASE} ubuntu_jammy"
 helm plugin install https://opendev.org/openstack/openstack-helm-plugin
@@ -34,7 +36,6 @@ kubectl label --overwrite nodes --all l3-agent=enabled
 kubectl label --overwrite nodes --all openstack-network-node=enabled
 
 
-OSH_INFRA_HELM_REPO=$(pwd)
 helm dependency build rabbitmq
 helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=openstack \
     --set pod.replicas.server=1 \
