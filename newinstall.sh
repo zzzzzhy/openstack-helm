@@ -1,5 +1,7 @@
 : ${OSH_HELM_REPO:="../openstack-helm"}
 : ${OSH_PATH:="../openstack-helm"}
+# export OPENSTACK_RELEASE=2023.2
+# export FEATURES="${OPENSTACK_RELEASE} ubuntu_jammy"
 helm plugin install https://opendev.org/openstack/openstack-helm-plugin
 tee > /tmp/openstack_namespace.yaml <<EOF
 apiVersion: v1
@@ -21,9 +23,7 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --set controller.ingressClassResource.default="false" \
     --set controller.ingressClass=nginx \
     --set controller.labels.app=ingress-api
-export OPENSTACK_RELEASE=2023.2
-# Features enabled for the deployment. This is used to look up values overrides.
-export FEATURES="${OPENSTACK_RELEASE} ubuntu_jammy"
+
 
 
 kubectl label --overwrite nodes --all openstack-control-plane=enabled
@@ -33,8 +33,9 @@ kubectl label --overwrite nodes --all openvswitch=enabled
 kubectl label --overwrite nodes --all l3-agent=enabled 
 kubectl label --overwrite nodes --all openstack-network-node=enabled
 
-apt install jq -y
+
 OSH_INFRA_HELM_REPO=$(pwd)
+helm dependency build rabbitmq
 helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=openstack \
     --set pod.replicas.server=1 \
     --set volume.enabled=false    \
@@ -42,6 +43,7 @@ helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=open
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c rabbitmq ${FEATURES})
 helm osh wait-for-pods openstack
 
+helm dependency build mariadb
 helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
     --namespace=openstack \
     --set volume.use_local_path_for_single_pod_cluster.enabled=false \
@@ -52,16 +54,19 @@ helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c mariadb ${FEATURES})
 helm osh wait-for-pods openstack
 
+helm dependency build memcached
 helm upgrade --install memcached ${OSH_INFRA_HELM_REPO}/memcached \
     --namespace=openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c memcached ${FEATURES})
 helm osh wait-for-pods openstack
 
+helm dependency build keystone
 helm upgrade --install keystone ${OSH_INFRA_HELM_REPO}/keystone \
     --namespace=openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c keystone ${FEATURES})
 helm osh wait-for-pods openstack
 
+helm dependency build openvswitch
 helm upgrade --install openvswitch ${OSH_INFRA_HELM_REPO}/openvswitch \
   --namespace=openstack \
   --set conf.ovs_hw_offload.enabled=true \
@@ -85,7 +90,7 @@ conf:
     br-ex: bond2.2125
 EOF
 
-#NOTE: Deploy command
+helm dependency build ovn
 helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
   --namespace=openstack \
   --values=/tmp/ovn.yaml \
@@ -97,11 +102,13 @@ helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
 #NOTE: Wait for deploy
 helm osh wait-for-pods openstack
 
-helm upgrade --install neutron ./neutron \
+helm dependency build neutron
+helm upgrade --install neutron ${OSH_INFRA_HELM_REPO}/neutron \
     --namespace=openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c neutron ovn)
 
-helm upgrade --install horizon $(pwd)/horizon \
+helm dependency build horizon
+helm upgrade --install horizon ${OSH_INFRA_HELM_REPO}/horizon \
     --namespace=openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c horizon ${FEATURES})
 helm osh wait-for-pods openstack   
