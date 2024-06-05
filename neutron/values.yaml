@@ -1799,8 +1799,8 @@ conf:
       # NOTE(portdirect): the bind port should not be defined, and is manipulated
       # via the endpoints section.
       bind_port: null
-      api_workers: 1
-      rpc_workers: 4
+      api_workers: 12
+      rpc_workers: 24
       allow_overlapping_ips: True
       state_path: /var/lib/neutron
       # core_plugin can be: ml2, calico
@@ -1834,14 +1834,16 @@ conf:
     ovn:
       ovn_metadata_enabled: false
       enable_distributed_floating_ip: true
-    nova:
-      auth_type: password
-      auth_version: v3
-      endpoint_type: internal
-    placement:
-      auth_type: password
-      auth_version: v3
-      endpoint_type: internal
+
+    quotas:
+      quota_network: 5000
+      quota_subnet: 5000
+      quota_port: 5000
+      quota_driver: neutron.db.quota.driver_nolock.DbQuotaNoLockDriver
+      track_quota_usage: true
+      quota_router: 5000
+      quota_floatingip: 5000
+      quota_security_group: 5000
     designate:
       auth_type: password
       auth_version: v3
