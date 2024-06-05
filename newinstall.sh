@@ -113,25 +113,3 @@ helm upgrade --install horizon ${OSH_INFRA_HELM_REPO}/horizon \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c horizon ${FEATURES})
 helm osh wait-for-pods openstack   
 
-
-
-
-
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: csi-cephfs-sc
-provisioner: cephfs.csi.ceph.com
-parameters:
-  clusterID: 6244bed2-1ef9-11ef-89e7-79ea293d4d88
-  fsName: diylink-fs  ## cephfs的名称
-  pool: cephfs_data
-  #  mounter: fuse       挂载方式
-  csi.storage.k8s.io/provisioner-secret-name: csi-ceph-secret
-  csi.storage.k8s.io/provisioner-secret-namespace: default
-  csi.storage.k8s.io/controller-expand-secret-name: csi-ceph-secret
-  csi.storage.k8s.io/controller-expand-secret-namespace: default
-  csi.storage.k8s.io/node-stage-secret-name: csi-ceph-secret
-  csi.storage.k8s.io/node-stage-secret-namespace: default
-reclaimPolicy: Delete
-allowVolumeExpansion: true
