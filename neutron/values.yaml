@@ -1844,6 +1844,7 @@ conf:
       quota_router: 5000
       quota_floatingip: 5000
       quota_security_group: 5000
+      quota_security_group_rule: 10000
     designate:
       auth_type: password
       auth_version: v3
