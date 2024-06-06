@@ -95,6 +95,9 @@ helm dependency build ovn
 helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
   --namespace=diylink-openstack \
   --values=/tmp/ovn.yaml \
+  --set pod.replicas.ovn_ovsdb_nb=1 \
+  --set pod.replicas.ovn_ovsdb_sb=1 \
+  --set pod.replicas.ovn_northd=1 \
   --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc \
   --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc \
   --set conf.onv_cms_options_gw_enabled=enable-chassis-as-gw \
@@ -105,7 +108,7 @@ helm osh wait-for-pods openstack
 
 helm dependency build neutron
 helm upgrade --install neutron ${OSH_INFRA_HELM_REPO}/neutron \
-    --namespace=diylink-openstack \
+    --namespace=openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c neutron ovn)
 
 helm dependency build horizon
