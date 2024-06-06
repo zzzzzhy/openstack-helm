@@ -2207,7 +2207,7 @@ endpoints:
       enabled: false
       neutron:
         username: neutron
-        password: hitosea..__2211
+        password: password
     hosts:
       default: localhost
     host_fqdn_override:
@@ -2225,7 +2225,7 @@ endpoints:
             internal: mariadb-tls-direct
       neutron:
         username: neutron
-        password: hitosea..__2211
+        password: password
     hosts:
       default: mariadb
     host_fqdn_override:
@@ -2245,7 +2245,7 @@ endpoints:
             internal: rabbitmq-tls-direct
       neutron:
         username: neutron
-        password: hitosea..__2211
+        password: password
     statefulset:
       replicas: 2
       name: rabbitmq-rabbitmq
@@ -2313,7 +2313,7 @@ endpoints:
       admin:
         region_name: RegionOne
         username: admin
-        password: hitosea..__2211
+        password: password
         project_name: admin
         user_domain_name: default
         project_domain_name: default
@@ -2321,7 +2321,7 @@ endpoints:
         role: admin
         region_name: RegionOne
         username: neutron
-        password: hitosea..__2211
+        password: password
         project_name: service
         user_domain_name: default
         project_domain_name: default
