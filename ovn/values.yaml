@@ -132,9 +132,9 @@ pod:
             timeoutSeconds: 10
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
-    ovn_ovsdb_nb: 2
-    ovn_ovsdb_sb: 2
-    ovn_northd: 2
+    ovn_ovsdb_nb: 1
+    ovn_ovsdb_sb: 1
+    ovn_northd: 1
   lifecycle:
     upgrades:
       daemonsets:
