@@ -80,7 +80,7 @@ network:
     external_policy_local: false
     node_port:
       enabled: true
-      port: 32751
+      port: 32753
   admin:
     node_port:
       enabled: false

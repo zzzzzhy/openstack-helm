@@ -9,13 +9,13 @@ tee > /tmp/openstack_namespace.yaml <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: openstack
+  name: diylink-openstack
 EOF
 kubectl apply -f /tmp/openstack_namespace.yaml
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --version="4.8.3" \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     --set controller.kind=Deployment \
     --set controller.admissionWebhooks.enabled="false" \
     --set controller.scope.enabled="true" \
@@ -37,7 +37,7 @@ kubectl label --overwrite nodes --all openstack-network-node=enabled
 
 
 helm dependency build rabbitmq
-helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=openstack \
+helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=diylink-openstack \
     --set pod.replicas.server=1 \
     --set volume.enabled=false    \
     --timeout=600s     \
@@ -46,7 +46,7 @@ helm osh wait-for-pods openstack
 
 helm dependency build mariadb
 helm upgrade --install mariadb ${OSH_INFRA_HELM_REPO}/mariadb \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     --set volume.use_local_path_for_single_pod_cluster.enabled=false \
     --set volume.enabled=true \
     --set volume.class_name=csi-cephfs-sc \
@@ -57,19 +57,19 @@ helm osh wait-for-pods openstack
 
 helm dependency build memcached
 helm upgrade --install memcached ${OSH_INFRA_HELM_REPO}/memcached \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c memcached ${FEATURES})
 helm osh wait-for-pods openstack
 
 helm dependency build keystone
 helm upgrade --install keystone ${OSH_INFRA_HELM_REPO}/keystone \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c keystone ${FEATURES})
 helm osh wait-for-pods openstack
 
 helm dependency build openvswitch
 helm upgrade --install openvswitch ${OSH_INFRA_HELM_REPO}/openvswitch \
-  --namespace=openstack \
+  --namespace=diylink-openstack \
   --set conf.ovs_hw_offload.enabled=true \
   $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c openvswitch ${FEATURES}) 
 helm osh wait-for-pods openstack
@@ -93,7 +93,7 @@ EOF
 
 helm dependency build ovn
 helm upgrade --install ovn ${OSH_INFRA_HELM_REPO}/ovn \
-  --namespace=openstack \
+  --namespace=diylink-openstack \
   --values=/tmp/ovn.yaml \
   --set volume.ovn_ovsdb_nb.class_name=csi-cephfs-sc \
   --set volume.ovn_ovsdb_sb.class_name=csi-cephfs-sc \
@@ -105,12 +105,12 @@ helm osh wait-for-pods openstack
 
 helm dependency build neutron
 helm upgrade --install neutron ${OSH_INFRA_HELM_REPO}/neutron \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c neutron ovn)
 
 helm dependency build horizon
 helm upgrade --install horizon ${OSH_INFRA_HELM_REPO}/horizon \
-    --namespace=openstack \
+    --namespace=diylink-openstack \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c horizon ${FEATURES})
 helm osh wait-for-pods openstack   
 
