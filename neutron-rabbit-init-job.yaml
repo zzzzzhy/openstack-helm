@@ -1,0 +1,115 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: neutron-rabbit-init
+  namespace: openstack
+  labels:
+    application: neutron
+    component: rabbit-init
+    release_group: neutron
+  annotations:
+    batch.kubernetes.io/job-tracking: ''
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: '-4'
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 1000
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        application: neutron
+
+        batch.kubernetes.io/job-name: neutron-rabbit-init
+        component: rabbit-init
+
+        job-name: neutron-rabbit-init
+        release_group: neutron
+      annotations:
+        openstackhelm.openstack.org/release_uuid: ''
+    spec:
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: rabbit-init-sh
+          configMap:
+            name: neutron-bin
+            defaultMode: 365
+      initContainers:
+        - name: init
+          image: quay.io/airshipit/kubernetes-entrypoint:v1.0.0
+          command:
+            - kubernetes-entrypoint
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INTERFACE_NAME
+              value: eth0
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
+            - name: DEPENDENCY_SERVICE
+              value: openstack:rabbitmq
+            - name: DEPENDENCY_DAEMONSET
+            - name: DEPENDENCY_CONTAINER
+            - name: DEPENDENCY_POD_JSON
+            - name: DEPENDENCY_CUSTOM_RESOURCE
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65534
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      containers:
+        - name: rabbit-init
+          image: docker.io/rabbitmq:3.13-management
+          command:
+            - /bin/bash
+            - '-c'
+            - /tmp/rabbit-init.sh
+          env:
+            - name: RABBITMQ_ADMIN_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: neutron-rabbitmq-admin
+                  key: RABBITMQ_CONNECTION
+            - name: RABBITMQ_USER_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: neutron-rabbitmq-user
+                  key: RABBITMQ_CONNECTION
+            - name: RABBITMQ_AUXILIARY_CONFIGURATION
+              value: >-
+                {"policies":[{"apply-to":"all","definition":{"ha-mode":"all","ha-sync-mode":"automatic","message-ttl":70000},"name":"ha_ttl_neutron","pattern":"^(?!(amq\\.|reply_)).*","priority":0,"vhost":"neutron"}]}
+          resources: {}
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - name: rabbit-init-sh
+              readOnly: true
+              mountPath: /tmp/rabbit-init.sh
+              subPath: rabbit-init.sh
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: OnFailure
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        openstack-control-plane: enabled
+      serviceAccountName: neutron-rabbit-init
+      serviceAccount: neutron-rabbit-init
+      securityContext: {}
+      schedulerName: default-scheduler
+  completionMode: NonIndexed
+  suspend: false
