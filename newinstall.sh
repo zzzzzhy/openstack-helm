@@ -39,7 +39,8 @@ kubectl label --overwrite nodes --all openstack-network-node=enabled
 helm dependency build rabbitmq
 helm upgrade --install rabbitmq ${OSH_INFRA_HELM_REPO}/rabbitmq --namespace=diylink-openstack \
     --set pod.replicas.server=1 \
-    --set volume.enabled=false    \
+    --set volume.enabled=true    \
+    --set volume.class_name=csi-cephfs-sc    \
     --timeout=600s     \
     $(helm osh get-values-overrides -p ${OSH_HELM_REPO} -c rabbitmq ${FEATURES})
 helm osh wait-for-pods openstack
